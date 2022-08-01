@@ -8,6 +8,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 contract FirstSaleMinter is Initializable {
     function initialize(address summoner_) public initializer {
         summoner = ISummonerUpgradeable(summoner_);
+        publicMinted = 0;
+        whitelistMinted = 0;
     }
 
     ISummonerUpgradeable summoner;
@@ -18,8 +20,8 @@ contract FirstSaleMinter is Initializable {
     uint16 constant public MALE_TOKEN = 3500;
     uint16 constant public FEMALE_TOKEN = 500;
 
-    uint16 public publicMinted = 0;
-    uint16 public whitelistMinted = 0;
+    uint16 public publicMinted;
+    uint16 public whitelistMinted;
 
     mapping(uint16 => uint16) private _tokenMaleMatrix;
     mapping(uint16 => uint16) private _tokenFemaleMatrix;
