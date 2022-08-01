@@ -24,27 +24,34 @@ contract FirstSaleMinter is Initializable {
     mapping(uint16 => uint16) private _tokenMaleMatrix;
     mapping(uint16 => uint16) private _tokenFemaleMatrix;
 
+    event PublicMint(address indexed to, uint256 indexed maleId);
+    event WhitelistMint(address indexed to, uint256 indexed maleId, uint256 indexed femaleId);
+
     function publicMint() external {
         require(publicMinted < PUBLIC_MINT, 'publicMint::Exceed');
-        _mintMale(publicMinted);
+        uint16 maleId = _mintMale(publicMinted);
         publicMinted++;
+        emit PublicMint(msg.sender, maleId);
     }
 
     function whitelistsMint() external {
         require(whitelistMinted < WHITELIST_MINT, 'whitelistMint::Exceed');
-        _mintMale(whitelistMinted);
-        _mintFemale(whitelistMinted);
+        uint16 maleId =  _mintMale(whitelistMinted);
+        uint16 femaleId = _mintFemale(whitelistMinted);
         whitelistMinted++;
+        emit WhitelistMint(msg.sender, maleId, femaleId);
     }
 
-    function _mintMale(uint16 minted) internal {
+    function _mintMale(uint16 minted) internal returns (uint16) {
         uint16 tokenId = _getMaleTokenToBeMinted(minted);
         summoner.mint(msg.sender, tokenId);
+        return tokenId;
     }
 
-    function _mintFemale(uint16 minted) internal {
+    function _mintFemale(uint16 minted) internal returns (uint16) {
         uint16 tokenId = _getFemaleTokenToBeMinted(minted) + FEMALE_INDEX_START;
         summoner.mint(msg.sender, tokenId);
+        return tokenId;
     }
 
     function _getMaleTokenToBeMinted(uint16 tokenMinted_) internal returns (uint16 tokenId) {
