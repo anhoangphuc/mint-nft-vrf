@@ -11,6 +11,7 @@ contract Summoner is ERC721Upgradeable, AccessControlUpgradeable {
     function initialize() public initializer {
         __ERC721_init('Summoner', 'SMN');
         __AccessControl_init();
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     function supportsInterface(bytes4 interfaceId) public view override(ERC721Upgradeable, AccessControlUpgradeable) returns (bool) {
