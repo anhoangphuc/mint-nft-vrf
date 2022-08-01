@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.12;
 
+import "./interfaces/ISummoner.sol";
+
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-contract Summoner is ERC721Upgradeable, AccessControlUpgradeable {
+contract Summoner is ERC721Upgradeable, AccessControlUpgradeable, ISummonerUpgradeable {
 
     bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');
 
