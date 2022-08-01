@@ -21,4 +21,15 @@ describe('FirstSaleMinter', async () => {
     it(`Revert if mint address is not minter`,async () => {
         await expect(summoner.connect(account1).mint(account1.address, 1)).to.be.revertedWith("mint::not minter");
     });
+
+    describe(`Mint success a token`, async () => {
+        const minterRole = await summoner.MINTER_ROLE();
+        beforeEach(async() => {
+            await summoner.connect(admin).grantRole(minterRole, account1.address);
+        });
+
+        it(`Grant role success`, async () => {
+            await expect(summoner.hasRole(minterRole, account1.address)).to.be.equal(true);
+        });
+    });
 })
