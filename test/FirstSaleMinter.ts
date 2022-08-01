@@ -60,4 +60,50 @@ context(`FirstSaleMinter`, async () => {
             .to.be.revertedWith('publicMint::Exceed');
         })
     })
+
+    context('Whitelist mint success', async() => {
+        let femaleIndexStart: number;
+        let whitelistMint: number;
+        let maleToken: number;
+        let femaleToken: number;
+        beforeEach(async() => {
+            femaleIndexStart = await firstSaleMinter.FEMALE_INDEX_START();
+            whitelistMint = await firstSaleMinter.WHITELIST_MINT();
+            maleToken = await firstSaleMinter.MALE_TOKEN();
+            femaleToken = await firstSaleMinter.FEMALE_TOKEN();
+        });
+
+        it('Whitelist mint token success', async() => {
+            await expect(firstSaleMinter.connect(account1).whitelistsMint())
+            .to.be.emit(firstSaleMinter, 'WhitelistMint')
+            .to.be.emit(summoner, 'Transfer');
+
+            const balance = await summoner.balanceOf(account1.address);
+            expect(balance).to.be.equal(2);
+            const newMaleMintedToken = await summoner.tokenOfOwnerByIndex(account1.address, 0);
+            const newFemaleMintedToken = await summoner.tokenOfOwnerByIndex(account1.address, 1);
+            expect(newMaleMintedToken).greaterThanOrEqual(0).lessThan(femaleIndexStart);
+            expect(newFemaleMintedToken).greaterThanOrEqual(femaleIndexStart).lessThan(maleToken + femaleToken);
+        });
+
+        it('Mint all whitelist mint token success', async() => {
+            for (let i = 0; i < whitelistMint; i++) {
+                await firstSaleMinter.connect(account1).whitelistsMint();
+            }
+            const mintedTokens = new Set<number>();
+            for (let i = 0; i < whitelistMint * 2; i++)
+                mintedTokens.add((await summoner.tokenOfOwnerByIndex(account1.address, i)).toNumber());
+            expect(mintedTokens.size).to.be.equal(whitelistMint * 2);
+            expect(Array.from(mintedTokens).filter((x) => x >= 0 && x < femaleIndexStart).length).to.be.equal(whitelistMint);
+            expect(Array.from(mintedTokens).filter((x) => x >= femaleIndexStart && x < femaleToken + maleToken).length).to.be.equal(whitelistMint);
+        });
+
+        it(`Revert if mint whitelist sale exceed`, async () => {
+            for (let i = 0; i < whitelistMint; i++) {
+                await firstSaleMinter.connect(account1).whitelistsMint();
+            }
+            await expect(firstSaleMinter.connect(account1).whitelistsMint())
+            .to.be.revertedWith('whitelistMint::Exceed');
+        });
+    })
 })
