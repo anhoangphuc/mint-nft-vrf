@@ -1,18 +1,18 @@
 import { ethers, upgrades } from 'hardhat';
+import { constants } from 'ethers';
 import { expect } from 'chai';
 import { Summoner } from '../typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { extendEnvironment } from 'hardhat/config';
 
 context('FirstSaleMinter', async () => {
     let summoner: Summoner;
-    let admin: SignerWithAddress, account1: SignerWithAddress;
+    let admin: SignerWithAddress, account1: SignerWithAddress, account2: SignerWithAddress;
     beforeEach(async () => {
         const SummonerContract = await ethers.getContractFactory('Summoner');
         summoner = await upgrades.deployProxy(SummonerContract) as Summoner;
         await summoner.deployed();
         await ethers.getSigners();
-        [admin, account1] = await ethers.getSigners();
+        [admin, account1, account2] = await ethers.getSigners();
     });
 
     it(`Deploy success`,async () => {
@@ -34,5 +34,11 @@ context('FirstSaleMinter', async () => {
             const hasRole = await summoner.hasRole(minterRole, account1.address);
             expect(hasRole).to.be.equal(true);
         });
+
+        it(`Mint a specific token`, async () => {
+            await expect(summoner.connect(account1).mint(account2.address, 1))
+            .to.be.emit(summoner, 'Transfer')
+            .withArgs(constants.AddressZero, account2.address, 1);
+        })
     });
 })
