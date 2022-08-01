@@ -22,7 +22,7 @@ contract Summoner is ERC721Upgradeable, AccessControlUpgradeable, ISummonerUpgra
     }
 
     function mint(address to, uint256 tokenId) external {
-        require(hasRole(MINTER_ROLE, msg.sender), 'mint:: not minter'); 
+        require(hasRole(MINTER_ROLE, msg.sender), 'mint::not minter'); 
         _safeMint(to, tokenId);
     }
 }
