@@ -24,8 +24,12 @@ context(`FirstSaleMinter`, async () => {
 
     context('Public mint success', async() => {
         let femaleIndexStart: number;
+        let maleToken: number;
+        let publicMint: number;
         beforeEach(async() => {
             femaleIndexStart = await firstSaleMinter.FEMALE_INDEX_START();
+            maleToken = await firstSaleMinter.MALE_TOKEN();
+            publicMint = await firstSaleMinter.PUBLIC_MINT();
         });
 
         it('Mint one token success', async() => {
@@ -35,6 +39,25 @@ context(`FirstSaleMinter`, async () => {
 
             const newMintedToken = await summoner.tokenOfOwnerByIndex(account1.address, 0);
             expect(newMintedToken).greaterThanOrEqual(0).lessThan(femaleIndexStart);
+        });
+
+        it('Mint all public mint token success', async() => {
+            for (let i = 0; i < publicMint; i++) {
+                await firstSaleMinter.connect(account1).publicMint();
+            }
+            const mintedTokens = new Set<number>();
+            for (let i = 0; i < publicMint; i++)
+                mintedTokens.add((await summoner.tokenOfOwnerByIndex(account1.address, i)).toNumber());
+            expect(mintedTokens.size).to.be.equal(publicMint);
+            expect(Array.from(mintedTokens).every((x) => x >= 0 && x < femaleIndexStart));
+        });
+
+        it(`Revert if mint public sale exceed`, async () => {
+            for (let i = 0; i < publicMint; i++) {
+                await firstSaleMinter.connect(account1).publicMint();
+            }
+            await expect(firstSaleMinter.connect(account1).publicMint())
+            .to.be.revertedWith('publicMint::Exceed');
         })
     })
 })
