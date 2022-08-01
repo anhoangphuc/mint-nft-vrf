@@ -105,5 +105,33 @@ context(`FirstSaleMinter`, async () => {
             await expect(firstSaleMinter.connect(account1).whitelistsMint())
             .to.be.revertedWith('whitelistMint::Exceed');
         });
+    });
+
+    context(`Complete mint`, async() => {
+        let femaleIndexStart: number;
+        let whitelistMint: number;
+        let maleToken: number;
+        let femaleToken: number;
+        let publicMint: number;
+        beforeEach(async() => {
+            femaleIndexStart = await firstSaleMinter.FEMALE_INDEX_START();
+            whitelistMint = await firstSaleMinter.WHITELIST_MINT();
+            publicMint = await firstSaleMinter.PUBLIC_MINT();
+            maleToken = await firstSaleMinter.MALE_TOKEN();
+            femaleToken = await firstSaleMinter.FEMALE_TOKEN();
+        });
+
+        it(`Complete mint success`, async() => {
+            const s = Array.from(Array(publicMint + whitelistMint).keys()).sort(() => Math.random() - 0.5);
+            for (const x of s) {
+                if (x < publicMint) {
+                    await firstSaleMinter.connect(account1).publicMint();
+                } else {
+                    await firstSaleMinter.connect(account1).whitelistsMint();
+                }
+            }
+            const balance = await summoner.balanceOf(account1.address);
+            expect(balance).to.be.equal(maleToken + femaleToken);
+        })
     })
 })

@@ -31,14 +31,14 @@ contract FirstSaleMinter is Initializable {
 
     function publicMint() external {
         require(publicMinted < PUBLIC_MINT, 'publicMint::Exceed');
-        uint16 maleId = _mintMale(publicMinted);
+        uint16 maleId = _mintMale(publicMinted + whitelistMinted);
         publicMinted++;
         emit PublicMint(msg.sender, maleId);
     }
 
     function whitelistsMint() external {
         require(whitelistMinted < WHITELIST_MINT, 'whitelistMint::Exceed');
-        uint16 maleId =  _mintMale(whitelistMinted);
+        uint16 maleId =  _mintMale(whitelistMinted + publicMinted);
         uint16 femaleId = _mintFemale(whitelistMinted);
         whitelistMinted++;
         emit WhitelistMint(msg.sender, maleId, femaleId);
