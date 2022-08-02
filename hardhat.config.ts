@@ -6,6 +6,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const privateKey = process.env.PRIVATE_KEY || '';
+const mumbaiKey = process.env.MUMBAI_API || '';
+const mumbaiUrl = process.env.MUMBAI_URL || '';
 
 const config: HardhatUserConfig = {
   solidity: "0.8.12",
@@ -14,10 +16,13 @@ const config: HardhatUserConfig = {
   },
   networks: {
     mumbai: {
-      url: 'https://rpc-mumbai.matic.today/',
+      url: mumbaiUrl,
       accounts: [privateKey],
       chainId: 80001,
     }  
+  },
+  etherscan: {
+    apiKey: mumbaiKey,
   }
 };
 
