@@ -1,5 +1,7 @@
 {
     "mumbai": {
-        "Summoner": "0x42436898434061B90b0568a05dA63b70c98AD6D2"
+        "Summoner": "0x42436898434061B90b0568a05dA63b70c98AD6D2",
+        "VrfCoordinator": "0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed",
+        "FirstSaleMinterVrf": "0x1cEdd886D38E01bfFeFe3ab7F167138E97Cb196b"
     }
 }

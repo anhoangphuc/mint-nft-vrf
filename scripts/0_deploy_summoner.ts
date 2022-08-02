@@ -2,7 +2,7 @@ import hre, { ethers, network, upgrades } from "hardhat";
 import { saveContract } from "./utils";
 
 (async function main() {
-    console.log(`Start Summoner contract`);
+    console.log(`Start deploying Summoner contract`);
     const networkName = network.name;    
     const SummonerContract = await ethers.getContractFactory('Summoner');
     const summoner = await upgrades.deployProxy(SummonerContract);
