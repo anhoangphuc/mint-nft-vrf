@@ -25,8 +25,8 @@ dotenv.config();
     await saveContract(networkName, 'FirstSaleMinterVrf', firstSaleMinterVrf.address);
     console.log(`Saved contract success`);
 
-    console.log(`Sleep 30 second for confirmation`);
-    await sleep(30000);
+    console.log(`Sleep 60 second for confirmation`);
+    await sleep(60000);
     await hre.run("verify:verify", {
         address: firstSaleMinterVrf.address,
         constructorArguments: [
