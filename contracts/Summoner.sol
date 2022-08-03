@@ -10,8 +10,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721Pausab
 
 contract Summoner is 
     ERC721Upgradeable,
-    ERC721EnumerableUpgradeable,
     ERC721PausableUpgradeable,
+    ERC721EnumerableUpgradeable,
     AccessControlUpgradeable,
     ISummonerUpgradeable 
     {

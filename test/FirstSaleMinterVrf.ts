@@ -11,7 +11,7 @@ context(`FirstSaleMinterVrf`, async () => {
     beforeEach(async () => {
         [admin, account1, account2] = await ethers.getSigners();
         const SummonerContract = await ethers.getContractFactory('Summoner', admin);
-        summoner = await upgrades.deployProxy(SummonerContract) as Summoner;
+        summoner = await upgrades.deployProxy(SummonerContract, ['']) as Summoner;
         await summoner.deployed();
 
         const VrfCoordinatorContract = await ethers.getContractFactory('VrfCoordinatorV2Mock', admin);
@@ -56,6 +56,9 @@ context(`FirstSaleMinterVrf`, async () => {
             }
             const balance = await summoner.balanceOf(account1.address);
             expect(balance).to.be.equal(maleToken + femaleToken);
+
+            const totalSupply = await summoner.totalSupply();
+            expect(totalSupply).to.be.equal(maleToken + femaleToken);
         });
     })
 
@@ -126,6 +129,9 @@ context(`FirstSaleMinterVrf`, async () => {
             const newFemaleMintedToken = await summoner.tokenOfOwnerByIndex(account1.address, 1);
             expect(newMaleMintedToken).greaterThanOrEqual(0).lessThan(femaleIndexStart);
             expect(newFemaleMintedToken).greaterThanOrEqual(femaleIndexStart).lessThan(maleToken + femaleToken);
+            
+            const totalSupply = await summoner.totalSupply();
+            expect(totalSupply).to.be.equal(2);
         });
 
         it('Mint all whitelist mint token success', async() => {
