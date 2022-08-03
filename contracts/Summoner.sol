@@ -6,14 +6,21 @@ import "./interfaces/ISummoner.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721PausableUpgradeable.sol";
 
-contract Summoner is ERC721Upgradeable, ERC721EnumerableUpgradeable, AccessControlUpgradeable, ISummonerUpgradeable {
-
+contract Summoner is 
+    ERC721Upgradeable,
+    ERC721EnumerableUpgradeable,
+    ERC721PausableUpgradeable,
+    AccessControlUpgradeable,
+    ISummonerUpgradeable 
+    {
     bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');
 
     function initialize() public initializer {
         __ERC721_init('Summoner', 'SMN');
         __ERC721Enumerable_init();
+        __ERC721Pausable_init();
         __AccessControl_init();
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -29,7 +36,8 @@ contract Summoner is ERC721Upgradeable, ERC721EnumerableUpgradeable, AccessContr
         _safeMint(to, tokenId);
     }
     
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable, ERC721PausableUpgradeable) {
+        ERC721PausableUpgradeable._beforeTokenTransfer(from, to, tokenId);
         ERC721EnumerableUpgradeable._beforeTokenTransfer(from, to, tokenId);    
     }
 }
