@@ -1,5 +1,5 @@
 import hre, { ethers, network } from "hardhat";
-import { getContracts, saveContract } from "./utils";
+import { getContracts, saveContract, sleep } from "./utils";
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -25,6 +25,8 @@ dotenv.config();
     await saveContract(networkName, 'FirstSaleMinterVrf', firstSaleMinterVrf.address);
     console.log(`Saved contract success`);
 
+    console.log(`Sleep 15 second for confirmation`);
+    await sleep(15000);
     await hre.run("verify:verify", {
         address: firstSaleMinterVrf.address,
         constructorArguments: [

@@ -1,5 +1,5 @@
 import hre, { ethers, network, upgrades } from "hardhat";
-import { getContracts, saveContract } from "./utils";
+import { sleep, saveContract } from "./utils";
 
 (async function main() {
     console.log(`Start deploying Summoner contract`);
@@ -14,8 +14,13 @@ import { getContracts, saveContract } from "./utils";
     await saveContract(networkName, "Summoner", summoner.address);
     console.log(`Saved contract address`);
 
+    console.log(`Sleep 15 second for confirmation`);
+    await sleep(15000);
+
     console.log(`Start verifying contract`);
     const implementationAddress = await upgrades.erc1967.getImplementationAddress(summoner.address);
+
+
     await hre.run("verify:verify", {
         address: implementationAddress,
     });
