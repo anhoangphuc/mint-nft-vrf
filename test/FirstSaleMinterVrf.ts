@@ -2,15 +2,16 @@ import { FirstSaleMinterVrf, IERC20, Summoner, VrfCoordinatorV2Mock, WETH } from
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
+import { BigNumber } from "ethers";
 
 context(`FirstSaleMinterVrf`, async () => {
     let firstSaleMinterVrf: FirstSaleMinterVrf;
     let summoner: Summoner;
     let vrfCoordinator: VrfCoordinatorV2Mock;
-    let admin: SignerWithAddress, account1: SignerWithAddress, account2: SignerWithAddress;
+    let admin: SignerWithAddress, account1: SignerWithAddress, account2: SignerWithAddress, treasury: SignerWithAddress;
     let weth: WETH;
     beforeEach(async () => {
-        [admin, account1, account2] = await ethers.getSigners();
+        [admin, account1, account2, treasury] = await ethers.getSigners();
         const SummonerContract = await ethers.getContractFactory('Summoner', admin);
         summoner = await upgrades.deployProxy(SummonerContract, ['']) as Summoner;
         await summoner.deployed();
@@ -24,7 +25,7 @@ context(`FirstSaleMinterVrf`, async () => {
         await weth.deployed();
 
         const FirstSaleMinterVrfContract = await ethers.getContractFactory('FirstSaleMinterVrf', admin);
-        firstSaleMinterVrf = await FirstSaleMinterVrfContract.deploy(vrfCoordinator.address, '0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f', 100, summoner.address, weth.address, admin.address);
+        firstSaleMinterVrf = await FirstSaleMinterVrfContract.deploy(vrfCoordinator.address, '0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f', 100, summoner.address, weth.address, treasury.address);
         await firstSaleMinterVrf.deployed();
 
         await summoner.connect(admin).grantRole(await summoner.MINTER_ROLE(), firstSaleMinterVrf.address);
@@ -174,6 +175,27 @@ context(`FirstSaleMinterVrf`, async () => {
             }
             await expect(firstSaleMinterVrf.connect(account2).mintWhitelist())
             .to.be.revertedWith('whitelist::exceed');
+        });
+    });
+
+    context('Minting fee', async() => {
+        let publicFee: BigNumber;
+        let whitelistFee: BigNumber;
+        beforeEach(async() => {
+            await mintWETH(account1);
+            await mintWETH(account2);
+            publicFee = await firstSaleMinterVrf.PUBLIC_FEE();
+            whitelistFee = await firstSaleMinterVrf.WHITELIST_FEE();
+        });
+
+        it('Public mint', async() => {
+            await expect(() => firstSaleMinterVrf.connect(account1).mintPublic())
+            .to.changeTokenBalances(weth, [account1, treasury], [publicFee.mul(-1), publicFee]);
+        });
+
+        it('Whitelist mint', async() => {
+            await expect(() => firstSaleMinterVrf.connect(account1).mintWhitelist())
+            .to.changeTokenBalances(weth, [account1, treasury], [whitelistFee.mul(-1), whitelistFee]);
         });
     });
 })
