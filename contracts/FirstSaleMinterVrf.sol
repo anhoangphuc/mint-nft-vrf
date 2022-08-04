@@ -4,14 +4,19 @@ pragma solidity 0.8.12;
 import "./interfaces/ISummoner.sol";
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 
-contract FirstSaleMinterVrf is VRFConsumerBaseV2 {
+contract FirstSaleMinterVrf is VRFConsumerBaseV2, Ownable {
     ISummonerUpgradeable public immutable summoner;
     VRFCoordinatorV2Interface public immutable COORDINATOR;
     bytes32 public immutable keyHash;
     uint64 public immutable subcriptionId;
+    address public treasury;
+    IERC20 public immutable WETH;
 
     mapping(uint256 => address) requestIdToAddress;
     mapping(uint256 => bool) isRequestIdWhitelist; 
@@ -24,6 +29,8 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2 {
     uint16 constant public PUBLIC_MINT = 3000;
     uint16 constant public MALE_TOKEN = 3500;
     uint16 constant public FEMALE_TOKEN = 500;
+    uint256 constant public WHITELIST_FEE = 0.3 ether;
+    uint256 constant public PUBLIC_FEE = 0.05 ether;
 
     uint16 public publicMinted = 0;
     uint16 public whitelistMinted = 0;
@@ -32,13 +39,20 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2 {
 
     event PublicMint(address indexed to, uint256 indexed maleId);
     event WhitelistMint(address indexed to, uint256 indexed maleId, uint256 indexed femaleId);
+    event TreasuryChanged(address from, address to);
 
-    constructor(address vrfCoordinator_, bytes32 keyHash_, uint64 subcriptionId_, address summoner_) VRFConsumerBaseV2(vrfCoordinator_){
+    constructor(address vrfCoordinator_, bytes32 keyHash_, uint64 subcriptionId_, address summoner_, address weth_, address treasury_) VRFConsumerBaseV2(vrfCoordinator_) Ownable(){
+        require(vrfCoordinator_ != address(0), 'cons::zero vrf');
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator_);
         keyHash = keyHash_;
         subcriptionId = subcriptionId_;
 
+        require(summoner_ != address(0), "cons::zero summoner");
         summoner = ISummonerUpgradeable(summoner_);
+        require(weth_ != address(0), "cons::zero weth");
+        WETH = IERC20(weth_);
+        require(treasury_ != address(0), "cons::zero treasury");
+        treasury = treasury_;
     }
 
     function mintWhitelist() external {
@@ -47,6 +61,7 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2 {
         requestIdToAddress[requestId] = msg.sender;
         isRequestIdWhitelist[requestId] = true;
         whitelistMinted++;
+        WETH.transferFrom(msg.sender, treasury, WHITELIST_FEE);
     }
 
     function mintPublic() external {
@@ -54,6 +69,7 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2 {
         uint256 requestId = COORDINATOR.requestRandomWords(keyHash, subcriptionId, 3, 2500000, 1);
         requestIdToAddress[requestId] = msg.sender;
         publicMinted++;
+        WETH.transferFrom(msg.sender, treasury, PUBLIC_FEE);
     }
 
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
@@ -117,5 +133,11 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2 {
 
         _tokenFemaleMatrix[randomNumber] = _tokenFemaleMatrix[maxIndex - 1] == 0 ? maxIndex - 1 : _tokenFemaleMatrix[maxIndex - 1];
         tokenId += FEMALE_INDEX_START;
+    }
+
+    function setTreasury(address newTreasury_) external onlyOwner {
+        require(newTreasury_ != address(0), 'setTreasury::zero address');
+        emit TreasuryChanged(treasury, newTreasury_);
+        treasury = newTreasury_;
     }
 }
