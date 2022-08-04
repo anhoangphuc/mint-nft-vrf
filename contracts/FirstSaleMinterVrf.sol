@@ -8,18 +8,17 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 
 contract FirstSaleMinterVrf is VRFConsumerBaseV2 {
-    ISummonerUpgradeable summoner;
-    VRFCoordinatorV2Interface COORDINATOR;
-    bytes32 keyHash;
-    uint64 subcriptionId;
+    ISummonerUpgradeable public immutable summoner;
+    VRFCoordinatorV2Interface public immutable COORDINATOR;
+    bytes32 public immutable keyHash;
+    uint64 public immutable subcriptionId;
+
     mapping(uint256 => address) requestIdToAddress;
     mapping(uint256 => bool) isRequestIdWhitelist; 
 
     mapping(uint16 => uint16) private _tokenMaleMatrix;
     mapping(uint16 => uint16) private _tokenFemaleMatrix;
 
-
-    uint16 constant public TOTAL_MINTED = 4000;
     uint16 constant public FEMALE_INDEX_START = 3500;
     uint16 constant public WHITELIST_MINT = 500;
     uint16 constant public PUBLIC_MINT = 3000;
