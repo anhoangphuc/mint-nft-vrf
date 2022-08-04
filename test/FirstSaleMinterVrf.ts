@@ -1,4 +1,4 @@
-import { FirstSaleMinterVrf, Summoner, VrfCoordinatorV2Mock } from "../typechain-types"
+import { FirstSaleMinterVrf, IERC20, Summoner, VrfCoordinatorV2Mock, WETH } from "../typechain-types"
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
@@ -8,6 +8,7 @@ context(`FirstSaleMinterVrf`, async () => {
     let summoner: Summoner;
     let vrfCoordinator: VrfCoordinatorV2Mock;
     let admin: SignerWithAddress, account1: SignerWithAddress, account2: SignerWithAddress;
+    let weth: WETH;
     beforeEach(async () => {
         [admin, account1, account2] = await ethers.getSigners();
         const SummonerContract = await ethers.getContractFactory('Summoner', admin);
@@ -18,8 +19,12 @@ context(`FirstSaleMinterVrf`, async () => {
         vrfCoordinator = await VrfCoordinatorContract.deploy();
         await vrfCoordinator.deployed();
 
+        const WETHContract = await ethers.getContractFactory('WETH');
+        weth = await WETHContract.deploy();
+        await weth.deployed();
+
         const FirstSaleMinterVrfContract = await ethers.getContractFactory('FirstSaleMinterVrf', admin);
-        firstSaleMinterVrf = await FirstSaleMinterVrfContract.deploy(vrfCoordinator.address, '0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f', 100, summoner.address);
+        firstSaleMinterVrf = await FirstSaleMinterVrfContract.deploy(vrfCoordinator.address, '0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f', 100, summoner.address, weth.address, admin.address);
         await firstSaleMinterVrf.deployed();
 
         await summoner.connect(admin).grantRole(await summoner.MINTER_ROLE(), firstSaleMinterVrf.address);
@@ -28,6 +33,12 @@ context(`FirstSaleMinterVrf`, async () => {
     it(`Deploy success`, async () => {
         expect(firstSaleMinterVrf.address).to.be.properAddress;
     });
+
+    async function mintWETH(account: SignerWithAddress) {
+        await weth.connect(account).mint();
+        const balance = await weth.balanceOf(account.address);
+        await weth.connect(account).approve(firstSaleMinterVrf.address, balance);
+    }
 
     context(`Complete mint`, async() => {
         let femaleIndexStart: number;
@@ -41,6 +52,8 @@ context(`FirstSaleMinterVrf`, async () => {
             publicMint = await firstSaleMinterVrf.PUBLIC_MINT();
             maleToken = await firstSaleMinterVrf.MALE_TOKEN();
             femaleToken = await firstSaleMinterVrf.FEMALE_TOKEN();
+            await mintWETH(account1);
+            await mintWETH(account2);
         });
 
         it(`Complete mint success`, async() => {
@@ -70,6 +83,9 @@ context(`FirstSaleMinterVrf`, async () => {
             femaleIndexStart = await firstSaleMinterVrf.FEMALE_INDEX_START();
             maleToken = await firstSaleMinterVrf.MALE_TOKEN();
             publicMint = await firstSaleMinterVrf.PUBLIC_MINT();
+
+            await mintWETH(account1);
+            await mintWETH(account2);
         });
 
         it('Mint one token success', async() => {
@@ -115,6 +131,9 @@ context(`FirstSaleMinterVrf`, async () => {
             whitelistMint = await firstSaleMinterVrf.WHITELIST_MINT();
             maleToken = await firstSaleMinterVrf.MALE_TOKEN();
             femaleToken = await firstSaleMinterVrf.FEMALE_TOKEN();
+
+            await mintWETH(account1);
+            await mintWETH(account2);
         });
 
         it('Whitelist mint token success', async() => {
