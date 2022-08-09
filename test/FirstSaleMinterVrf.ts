@@ -235,12 +235,40 @@ context(`FirstSaleMinterVrf`, async () => {
             await expect(firstSaleMinterVrf.connect(admin).togglePublicPhase())
             .to.be.emit(firstSaleMinterVrf, "PublicPhaseToggled")
             .withArgs(true);
+
+            const publicPhaseOpen = await firstSaleMinterVrf.publicPhaseOpen();
+            expect(publicPhaseOpen).to.be.equal(true);
+
+            await expect(firstSaleMinterVrf.connect(admin).togglePublicPhase())
+            .to.be.emit(firstSaleMinterVrf, "PublicPhaseToggled")
+            .withArgs(false);
+
+            const publicPhaseOpen1 = await firstSaleMinterVrf.publicPhaseOpen();
+            expect(publicPhaseOpen1).to.be.equal(false);
         });
 
         it(`Toggle whitelist phase success`, async () => {
             await expect(firstSaleMinterVrf.connect(admin).toggleWhitelistPhase())
             .to.be.emit(firstSaleMinterVrf, "WhitelistPhaseToggled")
             .withArgs(true);
+
+            const whitelistPhaseOpen = await firstSaleMinterVrf.whitelistPhaseOpen();
+            expect(whitelistPhaseOpen).to.be.equal(true);
+
+            await expect(firstSaleMinterVrf.connect(admin).toggleWhitelistPhase())
+            .to.be.emit(firstSaleMinterVrf, "WhitelistPhaseToggled")
+            .withArgs(false);
+
+            const whitelistPhaseOpen1 = await firstSaleMinterVrf.whitelistPhaseOpen();
+            expect(whitelistPhaseOpen1).to.be.equal(false);
+        });
+
+        it(`Revert if not admin toggle`, async() => {
+            await expect(firstSaleMinterVrf.connect(account1).toggleWhitelistPhase())
+            .to.be.revertedWith("Ownable: caller is not the owner");
+
+            await expect(firstSaleMinterVrf.connect(account1).togglePublicPhase())
+            .to.be.revertedWith("Ownable: caller is not the owner");
         });
     })
 })
