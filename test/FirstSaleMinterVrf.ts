@@ -41,7 +41,7 @@ context(`FirstSaleMinterVrf`, async () => {
         await weth.connect(account).approve(firstSaleMinterVrf.address, balance);
     }
 
-    xcontext(`Complete mint`, async() => {
+    context(`Complete mint`, async() => {
         let femaleIndexStart: number;
         let whitelistMint: number;
         let maleToken: number;
@@ -78,7 +78,7 @@ context(`FirstSaleMinterVrf`, async () => {
         });
     })
 
-    xcontext('Public mint success', async() => {
+    context('Public mint success', async() => {
         let femaleIndexStart: number;
         let maleToken: number;
         let publicMint: number;
@@ -125,7 +125,7 @@ context(`FirstSaleMinterVrf`, async () => {
         })
     })
 
-    xcontext('Whitelist mint success', async() => {
+    context('Whitelist mint success', async() => {
         let femaleIndexStart: number;
         let whitelistMint: number;
         let maleToken: number;
@@ -183,7 +183,7 @@ context(`FirstSaleMinterVrf`, async () => {
         });
     });
 
-    xcontext('Minting fee', async() => {
+    context('Minting fee', async() => {
         let publicFee: BigNumber;
         let whitelistFee: BigNumber;
         beforeEach(async() => {
@@ -206,7 +206,7 @@ context(`FirstSaleMinterVrf`, async () => {
         });
     });
 
-    xcontext('Set treasury', async() => {
+    context('Set treasury', async() => {
         it('Set treasury success', async () => {
             await expect(firstSaleMinterVrf.connect(admin).setTreasury(account2.address))
             .to.emit(firstSaleMinterVrf, "TreasuryChanged").withArgs(treasury.address, account2.address);
@@ -218,9 +218,14 @@ context(`FirstSaleMinterVrf`, async () => {
             await expect(firstSaleMinterVrf.connect(admin).setTreasury(constants.AddressZero))
                 .to.be.revertedWith("setTreasury::zero address");
         })
+
+        it(`Revert if set treasury is not admin`, async () => {
+            await expect(firstSaleMinterVrf.connect(account1).setTreasury(account1.address))
+            .to.be.revertedWith("Ownable: caller is not the owner");
+        })
     });
 
-    context('Modifier pubicPhase and whitelistPhase', async() => {
+    context('Modifier pubicPhase and whitelistPhase', async () => {
         it(`Revert if mint public when public not opened`, async () => {
             await expect(firstSaleMinterVrf.connect(account1).mintPublic())
                 .to.be.revertedWith("public::not open");
