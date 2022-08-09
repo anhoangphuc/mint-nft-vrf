@@ -37,13 +37,13 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2, Ownable {
     uint16 public maleMinted = 0;
     uint16 public femaleMinted = 0;
 
-    bool public whiteListPhaseOpen;
+    bool public whitelistPhaseOpen;
     bool public publicPhaseOpen;
 
     event PublicMint(address indexed to, uint256 indexed maleId);
     event WhitelistMint(address indexed to, uint256 indexed maleId, uint256 indexed femaleId);
     event TreasuryChanged(address from, address to);
-    event WhiteListPhaseToggled(bool currentStatus);
+    event WhitelistPhaseToggled(bool currentStatus);
     event PublicPhaseToggled(bool currentStatus);
 
     constructor(address vrfCoordinator_, bytes32 keyHash_, uint64 subcriptionId_, address summoner_, address weth_, address treasury_) VRFConsumerBaseV2(vrfCoordinator_) Ownable(){
@@ -61,7 +61,7 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2, Ownable {
     }
 
     function mintWhitelist() external {
-        require(whiteListPhaseOpen, "whitelist::not open");
+        require(whitelistPhaseOpen, "whitelist::not open");
         require(whitelistMinted < WHITELIST_MINT, 'whitelist::exceed');
         uint256 requestId = COORDINATOR.requestRandomWords(keyHash, subcriptionId, 3, 2500000, 1);
         requestIdToAddress[requestId] = msg.sender;
@@ -149,8 +149,8 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2, Ownable {
     }
 
     function toggleWhitelistPhase() external onlyOwner {
-        whiteListPhaseOpen = !whiteListPhaseOpen;
-        emit WhiteListPhaseToggled(whiteListPhaseOpen);
+        whitelistPhaseOpen = !whitelistPhaseOpen;
+        emit WhitelistPhaseToggled(whitelistPhaseOpen);
     }
 
     function togglePublicPhase() external onlyOwner {
