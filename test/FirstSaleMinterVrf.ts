@@ -2,7 +2,7 @@ import { FirstSaleMinterVrf, IERC20, Summoner, VrfCoordinatorV2Mock, WETH } from
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
-import { BigNumber } from "ethers";
+import { BigNumber, constants } from "ethers";
 
 context(`FirstSaleMinterVrf`, async () => {
     let firstSaleMinterVrf: FirstSaleMinterVrf;
@@ -198,4 +198,18 @@ context(`FirstSaleMinterVrf`, async () => {
             .to.changeTokenBalances(weth, [account1, treasury], [whitelistFee.mul(-1), whitelistFee]);
         });
     });
+
+    context('Set treasury', async() => {
+        it('Set treasury success', async () => {
+            await expect(firstSaleMinterVrf.connect(admin).setTreasury(account2.address))
+            .to.emit(firstSaleMinterVrf, "TreasuryChanged").withArgs(treasury.address, account2.address);
+            const newTreasury = await firstSaleMinterVrf.treasury();
+            expect(newTreasury).to.be.equal(account2.address);
+        });
+
+        it('Revert if set zero address to treasury', async() => {
+            await expect(firstSaleMinterVrf.connect(admin).setTreasury(constants.AddressZero))
+                .to.be.revertedWith("setTreasury::zero address");
+        })
+    })
 })
