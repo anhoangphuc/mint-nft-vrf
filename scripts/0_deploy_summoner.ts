@@ -14,8 +14,8 @@ import { sleep, saveContract } from "./utils";
     await saveContract(networkName, "Summoner", summoner.address);
     console.log(`Saved contract address`);
 
-    console.log(`Sleep 30 second for confirmation`);
-    await sleep(30000);
+    console.log(`Sleep 60 second for confirmation`);
+    await sleep(60000);
 
     console.log(`Start verifying contract`);
     const implementationAddress = await upgrades.erc1967.getImplementationAddress(summoner.address);

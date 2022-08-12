@@ -38,6 +38,8 @@ dotenv.config();
             gweiKeyHash_500,
             Number(subcriptionId),
             summoner,
+            weth,
+            treasury,
         ]
     })
 })();
