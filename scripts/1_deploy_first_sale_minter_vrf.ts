@@ -12,11 +12,15 @@ dotenv.config();
     const gweiKeyHash_500 = '0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f';
     const subcriptionId = process.env.CHAINLINK_SUB_ID;
     const summoner = getContracts()[networkName]['Summoner'];
+    const weth = getContracts()[networkName]['WETH'];
+    const treasury = getContracts()[networkName]['Treasury'];
     const firstSaleMinterVrf = await FirstSaleMinterVrf.deploy(
         vrfCoordinator,
         gweiKeyHash_500,
         Number(subcriptionId),
         summoner, 
+        weth,
+        treasury,
     );
     await firstSaleMinterVrf.deployed();
 

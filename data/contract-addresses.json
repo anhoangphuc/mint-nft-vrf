@@ -2,6 +2,8 @@
     "mumbai": {
         "Summoner": "0xaF94C5790a411bff60D08943Ca75CfaFC0E9b212",
         "VrfCoordinator": "0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed",
-        "FirstSaleMinterVrf": "0x0b539a1C375C6C82D4A1744450a1A853B63393D4"
+        "FirstSaleMinterVrf": "0x0b539a1C375C6C82D4A1744450a1A853B63393D4",
+        "WETH": "0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa",
+        "Treasury": "0x828371E228154511DdfC505Ad8a954Bcf59572a9"
     }
 }
