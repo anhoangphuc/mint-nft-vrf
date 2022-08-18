@@ -21,7 +21,7 @@ contract Summoner is
     bytes32 public constant ADMIN_ROLE = keccak256('ADMIN_ROLE');
     string private _baseUri;
 
-    function initialize(string calldata baseUri_) public initializer {
+    function initialize(string calldata baseUri_, address receiver, uint96 feeNumerator) public initializer {
         __ERC721_init('Summoner', 'SMN');
         __ERC721Enumerable_init();
         __ERC721Pausable_init();
@@ -29,6 +29,7 @@ contract Summoner is
         __AccessControl_init();
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _baseUri = baseUri_;
+        _setDefaultRoyalty(receiver, feeNumerator);
     }
 
     function supportsInterface(bytes4 interfaceId) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable, AccessControlUpgradeable, ERC721RoyaltyUpgradeable) returns (bool) {
