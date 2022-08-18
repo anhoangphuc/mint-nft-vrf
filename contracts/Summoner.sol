@@ -7,11 +7,13 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721RoyaltyUpgradeable.sol";
 
 contract Summoner is 
     ERC721Upgradeable,
     ERC721PausableUpgradeable,
     ERC721EnumerableUpgradeable,
+    ERC721RoyaltyUpgradeable,
     AccessControlUpgradeable,
     ISummonerUpgradeable 
     {
@@ -23,14 +25,16 @@ contract Summoner is
         __ERC721_init('Summoner', 'SMN');
         __ERC721Enumerable_init();
         __ERC721Pausable_init();
+        __ERC721Royalty_init();
         __AccessControl_init();
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _baseUri = baseUri_;
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable, AccessControlUpgradeable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721Upgradeable, ERC721EnumerableUpgradeable, AccessControlUpgradeable, ERC721RoyaltyUpgradeable) returns (bool) {
         return ERC721Upgradeable.supportsInterface(interfaceId)
             || ERC721EnumerableUpgradeable.supportsInterface(interfaceId)
+            || ERC721RoyaltyUpgradeable.supportsInterface(interfaceId)
             || AccessControlUpgradeable.supportsInterface(interfaceId);
     }
 
@@ -55,5 +59,14 @@ contract Summoner is
     function setBaseUri(string memory newUri) external {
         require(hasRole(ADMIN_ROLE, msg.sender), 'setBaseUri:not admin');        
         _baseUri = newUri;
+    }
+
+    function _burn(uint256 tokenId) internal virtual override(ERC721RoyaltyUpgradeable, ERC721Upgradeable) {
+        ERC721RoyaltyUpgradeable._burn(tokenId);
+    }
+
+    function setDefaultRoyalty(address receiver, uint96 feeNumerator) external {
+        require(hasRole(ADMIN_ROLE, msg.sender), 'setBaseUri:not admin');
+        _setDefaultRoyalty(receiver, feeNumerator);
     }
 }
