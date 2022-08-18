@@ -4,7 +4,7 @@ import { sleep, saveContract } from "./utils";
 (async function main() {
     console.log(`Start deploying Summoner contract`);
     const networkName = network.name;    
-    const baseUri = "ipfs://QmXPdtf3FLP19fX1Pwvyfs9x3Wd65KxAb3r4Z9oARx9HM5/";
+    const baseUri = "ipfs://QmchMZQHjPG1LSaeihEKF2Vew8ZDRKxPyQPoo4kKqrhg11/";
     const SummonerContract = await ethers.getContractFactory('Summoner');
     const summoner = await upgrades.deployProxy(SummonerContract, [baseUri]);
     await summoner.deployed();
