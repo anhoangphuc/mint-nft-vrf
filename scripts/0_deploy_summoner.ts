@@ -1,12 +1,14 @@
 import hre, { ethers, network, upgrades } from "hardhat";
-import { sleep, saveContract } from "./utils";
+import { sleep, saveContract, getContracts } from "./utils";
 
 (async function main() {
     console.log(`Start deploying Summoner contract`);
     const networkName = network.name;    
     const baseUri = "ipfs://QmchMZQHjPG1LSaeihEKF2Vew8ZDRKxPyQPoo4kKqrhg11/";
     const SummonerContract = await ethers.getContractFactory('Summoner');
-    const summoner = await upgrades.deployProxy(SummonerContract, [baseUri]);
+    const TreasuryAddress = getContracts()[networkName]['Treasury'];
+    const feeNumerator = 500 // 500/10000 = 5%
+    const summoner = await upgrades.deployProxy(SummonerContract, [baseUri, TreasuryAddress, feeNumerator]);
     await summoner.deployed();
 
     console.log(`Deploy summoner contract success at address ${summoner.address}`);

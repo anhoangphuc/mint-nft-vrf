@@ -13,7 +13,7 @@ context(`FirstSaleMinterVrf`, async () => {
     beforeEach(async () => {
         [admin, account1, account2, treasury] = await ethers.getSigners();
         const SummonerContract = await ethers.getContractFactory('Summoner', admin);
-        summoner = await upgrades.deployProxy(SummonerContract, ['']) as Summoner;
+        summoner = await upgrades.deployProxy(SummonerContract, ['', treasury.address, 500]) as Summoner;
         await summoner.deployed();
 
         const VrfCoordinatorContract = await ethers.getContractFactory('VrfCoordinatorV2Mock', admin);

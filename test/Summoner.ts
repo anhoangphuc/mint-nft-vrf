@@ -6,14 +6,13 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 
 context('Summoner', async () => {
     let summoner: Summoner;
-    let admin: SignerWithAddress, account1: SignerWithAddress, account2: SignerWithAddress;
+    let admin: SignerWithAddress, account1: SignerWithAddress, account2: SignerWithAddress, treasury: SignerWithAddress;
     let baseURI = 'BaseUri/'
     beforeEach(async () => {
+        [admin, account1, account2, treasury] = await ethers.getSigners();
         const SummonerContract = await ethers.getContractFactory('Summoner');
-        summoner = await upgrades.deployProxy(SummonerContract, [ baseURI ]) as Summoner;
+        summoner = await upgrades.deployProxy(SummonerContract, [ baseURI, treasury.address, 500 ]) as Summoner;
         await summoner.deployed();
-        await ethers.getSigners();
-        [admin, account1, account2] = await ethers.getSigners();
     });
 
     it(`Deploy success`,async () => {
