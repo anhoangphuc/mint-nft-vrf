@@ -44,6 +44,8 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2, Ownable {
 
     event PublicMint(address indexed to, uint256 indexed maleId);
     event WhitelistMint(address indexed to, uint256 indexed maleId, uint256 indexed femaleId);
+    event RequestPublicMint(address indexed user, uint256 indexed requestId, uint256 indexed publicMinted);
+    event RequestWhitelistMint(address indexed user, uint256 indexed requestId, uint256 indexed whitelistMinted);
     event TreasuryChanged(address from, address to);
     event WhitelistPhaseToggled(bool currentStatus);
     event PublicPhaseToggled(bool currentStatus);
@@ -76,6 +78,7 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2, Ownable {
         isRequestIdWhitelist[requestId] = true;
         whitelistMinted++;
         WETH.transferFrom(msg.sender, treasury, WHITELIST_FEE);
+        emit RequestWhitelistMint(msg.sender, requestId, whitelistMinted);
     }
 
     function mintPublic() external {
@@ -85,6 +88,7 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2, Ownable {
         requestIdToAddress[requestId] = msg.sender;
         publicMinted++;
         WETH.transferFrom(msg.sender, treasury, PUBLIC_FEE);
+        emit RequestPublicMint(msg.sender, requestId, publicMinted);
     }
 
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
