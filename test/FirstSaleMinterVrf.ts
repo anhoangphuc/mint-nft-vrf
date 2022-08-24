@@ -3,6 +3,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { BigNumber, constants } from "ethers";
+import { any } from "hardhat/internal/core/params/argumentTypes";
 
 context(`FirstSaleMinterVrf`, async () => {
     let firstSaleMinterVrf: FirstSaleMinterVrf;
@@ -57,6 +58,7 @@ context(`FirstSaleMinterVrf`, async () => {
             await mintWETH(account2);
             await firstSaleMinterVrf.connect(admin).toggleWhitelistPhase();
             await firstSaleMinterVrf.connect(admin).togglePublicPhase();
+            await firstSaleMinterVrf.connect(admin).addWhitelist([account1.address]);
         });
 
         it(`Complete mint success`, async() => {
@@ -140,6 +142,7 @@ context(`FirstSaleMinterVrf`, async () => {
             await mintWETH(account2);
 
             await firstSaleMinterVrf.connect(admin).toggleWhitelistPhase();
+            await firstSaleMinterVrf.connect(admin).addWhitelist([account1.address]);
         });
 
         it('Whitelist mint token success', async() => {
@@ -193,16 +196,17 @@ context(`FirstSaleMinterVrf`, async () => {
             whitelistFee = await firstSaleMinterVrf.WHITELIST_FEE();
             await firstSaleMinterVrf.connect(admin).togglePublicPhase();
             await firstSaleMinterVrf.connect(admin).toggleWhitelistPhase();
+            await firstSaleMinterVrf.connect(admin).addWhitelist([account1.address]);
         });
 
         it('Public mint', async() => {
             await expect(() => firstSaleMinterVrf.connect(account1).mintPublic())
-            .to.changeTokenBalances(weth, [account1, treasury], [publicFee.mul(-1), publicFee]);
+            .to.changeTokenBalances(weth, [account1, treasury], [publicFee.mul(-1), publicFee])
         });
 
         it('Whitelist mint', async() => {
             await expect(() => firstSaleMinterVrf.connect(account1).mintWhitelist())
-            .to.changeTokenBalances(weth, [account1, treasury], [whitelistFee.mul(-1), whitelistFee]);
+            .to.changeTokenBalances(weth, [account1, treasury], [whitelistFee.mul(-1), whitelistFee])
         });
     });
 
@@ -232,6 +236,7 @@ context(`FirstSaleMinterVrf`, async () => {
         });
 
         it(`Revert if mint whitelist when whitelist not opened`, async () => {
+            await firstSaleMinterVrf.connect(admin).addWhitelist([account1.address]);
             await expect(firstSaleMinterVrf.connect(account1).mintWhitelist())
                 .to.be.revertedWith("whitelist::not open");
         });
