@@ -24,6 +24,8 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2, Ownable {
     mapping(uint16 => uint16) private _tokenMaleMatrix;
     mapping(uint16 => uint16) private _tokenFemaleMatrix;
 
+    mapping(address => bool) isWhitelisted;
+
     uint16 constant public FEMALE_INDEX_START = 3500;
     uint16 constant public WHITELIST_MINT = 500;
     uint16 constant public PUBLIC_MINT = 3000;
@@ -45,6 +47,11 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2, Ownable {
     event TreasuryChanged(address from, address to);
     event WhitelistPhaseToggled(bool currentStatus);
     event PublicPhaseToggled(bool currentStatus);
+    event WhitelistAdded(address[] users);
+    event WhitelistRemoved(address[] users);
+
+    error UserWhitelisted(address user);
+    error UserNotWhitelisted(address user);
 
     constructor(address vrfCoordinator_, bytes32 keyHash_, uint64 subcriptionId_, address summoner_, address weth_, address treasury_) VRFConsumerBaseV2(vrfCoordinator_) Ownable(){
         require(vrfCoordinator_ != address(0), 'cons::zero vrf');
@@ -63,6 +70,7 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2, Ownable {
     function mintWhitelist() external {
         require(whitelistPhaseOpen, "whitelist::not open");
         require(whitelistMinted < WHITELIST_MINT, 'whitelist::exceed');
+        require(isWhitelisted[msg.sender], "whitelist::not whitelisted");
         uint256 requestId = COORDINATOR.requestRandomWords(keyHash, subcriptionId, 3, 2500000, 1);
         requestIdToAddress[requestId] = msg.sender;
         isRequestIdWhitelist[requestId] = true;
@@ -156,5 +164,21 @@ contract FirstSaleMinterVrf is VRFConsumerBaseV2, Ownable {
     function togglePublicPhase() external onlyOwner {
         publicPhaseOpen = !publicPhaseOpen;    
         emit PublicPhaseToggled(publicPhaseOpen);
+    }
+
+    function addWhitelist(address[] calldata users) external onlyOwner {
+        for (uint256 i = 0; i < users.length; i++) {
+            if (isWhitelisted[users[i]] == true) revert UserWhitelisted({ user: users[i]});
+            isWhitelisted[users[i]] = true;
+        }
+        emit WhitelistAdded(users);
+    }
+
+    function removeWhitelist(address[] calldata users) external onlyOwner {
+        for (uint256 i = 0; i < users.length; i++) {
+            if (isWhitelisted[users[i]] == false) revert UserNotWhitelisted({ user: users[i]});
+            isWhitelisted[users[i]] = false;
+        }
+        emit WhitelistRemoved(users);
     }
 }
