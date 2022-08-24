@@ -3,7 +3,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { BigNumber, constants } from "ethers";
-import { any } from "hardhat/internal/core/params/argumentTypes";
+import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs"
 
 context(`FirstSaleMinterVrf`, async () => {
     let firstSaleMinterVrf: FirstSaleMinterVrf;
@@ -199,14 +199,26 @@ context(`FirstSaleMinterVrf`, async () => {
             await firstSaleMinterVrf.connect(admin).addWhitelist([account1.address]);
         });
 
-        it('Public mint', async() => {
+        it('Public mint change fee', async() => {
             await expect(() => firstSaleMinterVrf.connect(account1).mintPublic())
             .to.changeTokenBalances(weth, [account1, treasury], [publicFee.mul(-1), publicFee])
         });
 
-        it('Whitelist mint', async() => {
+        it('Public mint emit event', async() => {
+            await expect(firstSaleMinterVrf.connect(account1).mintPublic())
+            .to.be.emit(firstSaleMinterVrf, "RequestPublicMint")
+            .withArgs(account1.address, anyValue, 1);
+        });
+
+        it('Whitelist mint change fee', async() => {
             await expect(() => firstSaleMinterVrf.connect(account1).mintWhitelist())
             .to.changeTokenBalances(weth, [account1, treasury], [whitelistFee.mul(-1), whitelistFee])
+        });
+
+        it('Whitelist mint emit event', async() => {
+            await expect(firstSaleMinterVrf.connect(account1).mintWhitelist())
+            .to.be.emit(firstSaleMinterVrf, "RequestWhitelistMint")
+            .withArgs(account1.address, anyValue, 1);
         });
     });
 
