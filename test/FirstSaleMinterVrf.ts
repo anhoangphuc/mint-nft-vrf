@@ -292,5 +292,47 @@ context(`FirstSaleMinterVrf`, async () => {
             await expect(firstSaleMinterVrf.connect(account1).togglePublicPhase())
             .to.be.revertedWith("Ownable: caller is not the owner");
         });
+    });
+
+    context('Whitelist management', async() => {
+        it(`Add user to whitelist success`, async() => {
+            await expect(firstSaleMinterVrf.connect(admin).addWhitelist([account1.address, account2.address]))
+            .to.be.emit(firstSaleMinterVrf, "WhitelistAdded")
+            .withArgs([account1.address, account2.address]);
+            
+            const isAccount1Whitelist = await firstSaleMinterVrf.isWhitelisted(account1.address);
+            expect(isAccount1Whitelist).to.be.equal(true);
+            const isAccount2Whitelist = await firstSaleMinterVrf.isWhitelisted(account2.address);
+            expect(isAccount2Whitelist).to.be.equal(true);
+        });
+
+        it(`Remove user from whitelist`, async() => {
+            await firstSaleMinterVrf.connect(admin).addWhitelist([account1.address, account2.address]);
+            await expect(firstSaleMinterVrf.connect(admin).removeWhitelist([account2.address]))
+            .to.be.emit(firstSaleMinterVrf, "WhitelistRemoved")
+            .withArgs([account2.address]);
+            const isAccount2Whitelist = await firstSaleMinterVrf.isWhitelisted(account2.address);
+            expect(isAccount2Whitelist).to.be.equal(false);
+        });
+
+        it(`Revert if whitelist add and remove is not owner`, async() => {
+            await expect(firstSaleMinterVrf.connect(account1).addWhitelist([account1.address]))
+            .to.be.revertedWith("Ownable: caller is not the owner");
+            await expect(firstSaleMinterVrf.connect(account1).removeWhitelist([account1.address]))
+            .to.be.revertedWith("Ownable: caller is not the owner");
+        });
+
+        it(`Revert if add whitelist twice`, async() => {
+            await firstSaleMinterVrf.connect(admin).addWhitelist([account1.address]);
+            await expect(firstSaleMinterVrf.connect(admin).addWhitelist([account1.address]))
+            .to.be.revertedWithCustomError(firstSaleMinterVrf, "UserWhitelisted")
+            .withArgs(account1.address);
+        });
+
+        it(`Revert if remove whitelist twice`, async() => {
+            await expect(firstSaleMinterVrf.connect(admin).removeWhitelist([account1.address]))
+            .to.be.revertedWithCustomError(firstSaleMinterVrf, "UserNotWhitelisted")
+            .withArgs(account1.address);
+        });
     })
 })
